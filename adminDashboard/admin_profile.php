@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         h2 {
             background: linear-gradient(90deg,rgb(71, 72, 73), #ff7f00);
-            -webkit-background-clip: text;
+            /* -webkit-background-clip: text; */
             -webkit-text-fill-color: transparent;
             font-weight: bold;
             text-align: center;
