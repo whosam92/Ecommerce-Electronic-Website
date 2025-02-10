@@ -246,7 +246,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <input type="password" name="password" placeholder="Password">
                     </div>
                     <div class="form-group">
-                        <a href="#" class="forgot-password">Forgot Password?</a>
                     </div>
                     <button type="submit" class="btn-login">Login</button>
                 </form>
@@ -281,6 +280,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div class="form-group">
                         <input type="file" name="image" accept="image/*" class="form-control mb-2">
                     </div>
+                    
                     <div class="form-buttons">
                         <button type="submit" class="btn-register">Register</button>
                         <button type="reset" class="btn-clear">Clear</button>

@@ -62,40 +62,31 @@ foreach ($cartItems as $item) {
             color: green;
             font-weight: bold;
         }
-        /* Align the button to the right */
-.checkout-container {
-    text-align: right;
-    margin-top: 20px;
-}
-
-/* Orange button styling */
-.checkout-btn {
-    color: white;
- 
-}
-.checkout-btn:hover {
-    background-color: rgb(255, 127, 0);
-    color: white;
-}
-
-.cart-btn {
-    border-radius: 6px;
-    font-size: 16px;
-    padding: 0px 15px;
-    height: 30px;
-    line-height: 22px;
-    background-color: rgb(255, 127, 0);
-    font-size: 33px;
-color:white;
-}
-
-.quantity-controls span {
-    font-weight: bold;
-    font-size: 21px;
-}
-
-
-
+        .checkout-container {
+            text-align: right;
+            margin-top: 20px;
+        }
+        .checkout-btn {
+            color: white;
+        }
+        .checkout-btn:hover {
+            background-color: rgb(255, 127, 0);
+            color: white;
+        }
+        .cart-btn {
+            border-radius: 6px;
+            font-size: 16px;
+            padding: 0px 15px;
+            height: 30px;
+            line-height: 22px;
+            background-color: rgb(255, 127, 0);
+            font-size: 33px;
+            color: white;
+        }
+        .quantity-controls span {
+            font-weight: bold;
+            font-size: 21px;
+        }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
@@ -120,9 +111,13 @@ color:white;
                 <tbody>
                     <?php if (!empty($cartItems)): ?>
                         <?php foreach ($cartItems as $item): ?>
+                            <?php
+                            // Ensure correct image path
+                            $imagePath = !empty($item['image']) ? (strpos($item['image'], 'uploads/') === false ? 'uploads/' . $item['image'] : $item['image']) : 'uploads/default.png';
+                            ?>
                             <tr data-product-id="<?= $item['product_id'] ?>">
                                 <td>
-                                    <img src="uploads/<?= htmlspecialchars($item['image']) ?>" alt="Product Image" width="100">
+                                    <img src="<?= htmlspecialchars($imagePath) ?>" alt="Product Image Not Found" width="100" onerror="this.src='uploads/default.png';">
                                     <p><strong><?= htmlspecialchars($item['name']) ?></strong></p>
                                     <p><?= htmlspecialchars($item['description']) ?></p>
                                 </td>
@@ -164,18 +159,20 @@ color:white;
             <div class="total-section mt-4">
                 <h3 id="total-before-wrapper" style="display: none;">Total Before Coupon: <span class="total-before">$<?= number_format($total_price, 2) ?></span></h3>
                 <h3>Total: <span id="total-price" class="total-after">$<?= number_format($total_price, 2) ?></span></h3>
-                                
             </div>
 
-            <!-- Proceed to Checkout Button (Right-Aligned) -->
-<div class="checkout-container">
-<button class="submit-btn-1 mt-20 btn-hover-1" type="submit"><a href="PaymentPage.php" class="checkout-btn">Proceed to Checkout</a></button>
-    
-</div>
-<br>
-
+            <!-- Proceed to Checkout Button -->
+            <div class="checkout-container">
+                <button class="submit-btn-1 mt-20 btn-hover-1" type="submit">
+                    <a href="PaymentPage.php" class="checkout-btn">Proceed to Checkout</a>
+                </button>
+            </div>
         <?php endif; ?>
     </div>
+</body>
+</html>
+
+
 
     <!-- Footer -->
     <?php include('footer.php'); ?>

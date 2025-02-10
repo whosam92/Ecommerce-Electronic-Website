@@ -66,27 +66,36 @@ if (isset($_SESSION['user_id'])) {
                     <div class="col-lg-6 col-md-6 d-none d-md-block"></div>
                     <div class="col-lg-6 col-md-6">
                         <div class="top-link clearfix">
-                            <ul class="link f-right">
-                                <li>
-                                    <a href="my-account.php">
-                                        <i class="zmdi zmdi-account"></i>
-                                        My Account
-                                    </a>
-                                </li>
-                                <!-- <li>
-                                    <a href="wishlist.html">
-                                        <i class="zmdi zmdi-favorite"></i>
-                                        Wish List (0)
-                                    </a> -->
-                                </li>
-                                <li>
-                                    <a href="login.php">
-                                        <i class="zmdi zmdi-lock"></i>
-                                        Login
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
+
+                        <!-- top nav icons and login logout switch code  -->
+                        <ul class="link f-right">
+    <li>
+        <a href="my-account.php">
+            <i class="zmdi zmdi-account"></i>
+            My Account
+        </a>
+    </li>
+    <?php if (isset($_SESSION['user_id'])): ?>
+        <li>
+            <a href="logout.php">
+                <i class="zmdi zmdi-lock-open"></i>
+                Logout
+            </a>
+        </li>
+    <?php else: ?>
+        <li>
+            <a href="login.php">
+                <i class="zmdi zmdi-lock"></i>
+                Login
+            </a>
+        </li>
+    <?php endif; ?>
+</ul>
+
+<!-- logic switch login logout here top nav ends here  -->
+
+
+</div>
                     </div>
                 </div>
             </div>

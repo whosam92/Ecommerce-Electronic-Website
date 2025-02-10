@@ -199,38 +199,11 @@ try {
                         </div>
 
                         
-                        <h3 class="mt-5 text-center">Order History (<?= htmlspecialchars($total_orders->total_orders ?? 0); ?>)</h3>
-                        <div class="table-responsive">
-                            <table class="table table-striped table-hover mt-3">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Date</th>
-                                        <th>Total Price</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($orders as $order): ?>
-                                        <tr>
-                                            <td><?= htmlspecialchars($order->id); ?></td>
-                                            <td><?= htmlspecialchars($order->created_at); ?></td>
-                                            <td><?= htmlspecialchars($order->total_price); ?> $</td>
-                                            <td>
-                                                <span class="badge badge-<?= $order->status == 'Completed' ? 'success' : ($order->status == 'Pending' ? 'warning' : 'danger') ?>">
-                                                    <?= htmlspecialchars($order->status); ?>
-                                                </span>
-                                            </td>
-                                            <td><a href="order_details.php?order_id=<?= htmlspecialchars($order->id); ?>" class="btn btn-view">View Details</a></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
                     </div>
                 </div>
             </div>
+            <br>
+            <br>
         </div>
         <?php include("footer.php") ?>
     </div>

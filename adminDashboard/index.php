@@ -20,6 +20,26 @@ $recentOrders = $conn->query("SELECT o.id, u.name AS user_name, o.total_price, o
 $recentCustomers = $conn->query("SELECT name, country, image FROM users ORDER BY created_at DESC LIMIT 5");
 ?>
 
+<!-- admin check if logged or not starts here -->
+<?php
+session_start();
+
+// Check if the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    // If not logged in, redirect to login page with an alert
+    echo "<script>alert('Please log in to access this page.'); window.location.href = 'login.php';</script>";
+    exit();
+}
+
+// Check if the user has admin privileges (role_id = 2)
+if ($_SESSION['role_id'] !== 2) {
+    // If the user is not an admin, redirect to login page with an alert
+    echo "<script>alert('Access denied! Admins only.'); window.location.href = '../login.php';</script>";
+    exit();
+}
+?>
+<!-- admin check ends here  -->
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -118,24 +138,18 @@ $recentCustomers = $conn->query("SELECT name, country, image FROM users ORDER BY
                 <div class="toggle">
                     <ion-icon name="menu-outline"></ion-icon>
                 </div>
-                <div class="search">
-                    <label>
-                        <input type="text" placeholder="Search here">
-                        <ion-icon name="search-outline"></ion-icon>
-                    </label>
-                </div>
+                
                 <div class="user">
 
     <!-- Display the user's profile picture and name -->
-    <a href="admin_profile.php">
-        <img src="adminDashboard/users/<?php echo htmlspecialchars($user['image']); ?>" alt="Admin Profile" style="width:50px; height:50px; border-radius:50%;">
-        <span><?php echo htmlspecialchars($user['name']); ?></span>
-    </a>
+   
+    
+    <!-- will connect fill admin profile later on  -->
+
                 </div>
             </div>
 
-            <!-- Dynamic Cards -->
-         <!-- Dynamic Cards -->
+            <!-- Dynamic Cards start -->
 <div class="cardBox">
     <div class="card">
         <div>
@@ -184,6 +198,7 @@ $recentCustomers = $conn->query("SELECT name, country, image FROM users ORDER BY
 </div>
 
 </div>
+         <!-- Dynamic Cards ends -->
 
 
             <!-- Recent Orders -->

@@ -1,9 +1,51 @@
+
+<!-- chekcking for the user if logged or not  -->
+
+
+<?php
+// Start session if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Include database connection
+require 'adminDashboard/db.php'; // Adjust the path as necessary
+
+// Check if user is logged in
+$is_logged_in = isset($_SESSION['user_id']);
+$role_id = $_SESSION['role_id'] ?? null;
+
+// Initialize cart quantity
+$cart_quantity = 0;
+
+if ($is_logged_in) {
+    $user_id = $_SESSION['user_id'];
+
+    // Fetch total quantity of items in the cart for the logged-in user
+    $sql = "SELECT SUM(quantity) AS total_quantity FROM cart WHERE user_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('i', $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+
+    $cart_quantity = $row['total_quantity'] ?? 0;
+    $stmt->close();
+}
+?>
+
+
+
+<!-- check for the user if logged or not  -->
+
+
+
 <!DOCTYPE html>
 <html class="no-js" lang="en">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title>Subas || Home-4</title>
+    <title>Subas || E-Market</title>
     <meta name="description" content="" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -245,10 +287,13 @@ $banner_product_result = $conn->query($banner_product_sql);
                                 <div class="up-comming-pro-img f-left">
                                     <a href="single-product.php?id=<?= $upcoming_product['id'] ?>">
                                         <img src="<?= htmlspecialchars($upcoming_product['image']) ?>" alt="<?= htmlspecialchars($upcoming_product['name']) ?>" />
+                                        
                                     </a>
                                 </div>
                                 <div class="up-comming-pro-info f-left">
                                     <h3><a href="single-product.php?id=<?= $upcoming_product['id'] ?>"><?= htmlspecialchars($upcoming_product['name']) ?></a></h3>
+                                    <h3><a href="single-product.php?id=<?= $upcoming_product['id'] ?>">$<?= htmlspecialchars($upcoming_product['price']) ?></a></h3>
+
                                     <p><?= htmlspecialchars($upcoming_product['description']) ?></p>
                                     <div class="up-comming-time">
                                         
@@ -317,8 +362,8 @@ $banner_product_result = $conn->query($banner_product_sql);
                                         <img src="<?= htmlspecialchars($banner_product['image']) ?>" alt="<?= htmlspecialchars($banner_product['name']) ?>" />
                                     </a>
                                 </div>
+                              
                                 <div class="banner-info">
-                                    <h3><a href="single-product.php?id=<?= $banner_product['id'] ?>"><?= htmlspecialchars($banner_product['name']) ?></a></h3>
                                     <!-- <ul class="banner-featured-list">
                                         <li><i class="zmdi zmdi-check"></i><span>High Quality</span></li>
                                         <li><i class="zmdi zmdi-check"></i><span>Best Price</span></li>

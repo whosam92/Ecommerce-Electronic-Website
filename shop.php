@@ -31,56 +31,115 @@ $result = $query->get_result();
 $total_products = $result->num_rows; // Total products for display
 ?>
 
-<!DOCTYPE html>
-<html class="no-js" lang="en">
+<?php
+$limit = 8; // Number of products per page
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
 
-<head>
-    <meta charset="utf-8" />
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title>Subas || Shop</title>
-    <meta name="description" content="" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+// Get total number of products
+$total_result = $conn->query("SELECT COUNT(*) as total FROM products");
+$total_row = $total_result->fetch_assoc();
+$total_products = $total_row['total'];
+$total_pages = ceil($total_products / $limit);
 
-    <!-- Favicon -->
-    <link rel="shortcut icon" type="image/x-icon" href="img/icon/favicon.png" />
+// Fetch paginated products
+$query = "SELECT * FROM products LIMIT $limit OFFSET $offset";
+$result = $conn->query($query);
+?>
 
-    <!-- All CSS Files -->
-    <link rel="stylesheet" href="css/bootstrap.min.css" />
-    <link rel="stylesheet" href="lib/css/nivo-slider.css" />
-    <link rel="stylesheet" href="css/core.css" />
-    <link rel="stylesheet" href="css/shortcode/shortcodes.css" />
-    <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="css/responsive.css" />
-    <link rel="stylesheet" href="css/custom.css" />
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<?php
+// session_start();
+include './adminDashboard/db.php'; // Include the database connection file
 
-    <!-- Modernizr JS -->
-    <script src="js/vendor/modernizr-3.11.2.min.js"></script>
+// Default values for sorting and price range
+$order_by = "created_at DESC";
+$min_price = 0;
+$max_price = 3000; // Adjust this to your maximum product price
+
+// Handle sorting
+if (isset($_GET['sort'])) {
+    $sort = $_GET['sort'];
+    if ($sort == 'price_low_high') {
+        $order_by = "price ASC";
+    } elseif ($sort == 'price_high_low') {
+        $order_by = "price DESC";
+    }
+}
+
+// Handle price range
+if (isset($_GET['min_price']) && isset($_GET['max_price'])) {
+    $min_price = floatval($_GET['min_price']);
+    $max_price = floatval($_GET['max_price']);
+}
+
+// Pagination setup
+$limit = 8; // Number of products per page
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
+
+// Get total number of products that match the filters
+$total_query = $conn->prepare("SELECT COUNT(*) as total FROM products WHERE price BETWEEN ? AND ?");
+$total_query->bind_param("dd", $min_price, $max_price);
+$total_query->execute();
+$total_result = $total_query->get_result();
+$total_row = $total_result->fetch_assoc();
+$total_products = $total_row['total'];
+$total_pages = ceil($total_products / $limit);
+
+// Fetch products for the current page
+$query = $conn->prepare("SELECT * FROM products WHERE price BETWEEN ? AND ? ORDER BY $order_by LIMIT ? OFFSET ?");
+$query->bind_param("ddii", $min_price, $max_price, $limit, $offset);
+$query->execute();
+$result = $query->get_result();
+?>
+
+
 
     <style>
-    .pagination .page-item .page-link {
-    color: #ff7f00;
-}
+        /* Pagination Styles */
+        .pagination .page-item .page-link {
+            color: #ff7f00;
+        }
 
-.pagination .page-item.active .page-link {
-    background-color: #ff7f00 !important;
-    border-color: #d66a00 !important;
-    color: white;
-}
+        .pagination .page-item.active .page-link {
+            background-color: #ff7f00 !important;
+            border-color: #d66a00 !important;
+            color: white;
+        }
 
-.pagination .page-item.disabled .page-link {
-    background-color: #e0e0e0 !important; 
-    border-color: #e0e0e0 !important;
-    color: #a0a0a0 !important;
-    pointer-events: none;
-    opacity: 0.6;
-}
+        .pagination .page-item.disabled .page-link {
+            background-color: #e0e0e0 !important; 
+            border-color: #e0e0e0 !important;
+            color: #a0a0a0 !important;
+            pointer-events: none;
+            opacity: 0.6;
+        }
 
+        /* Card Styles */
+        .product-item {
+            height: 350px; /* Set a consistent height for all product cards */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
 
-</style>
+        .product-img img {
+            max-height: 200px; /* Limit image height for consistency */
+            object-fit: contain;
+            width: 100%;
+        }
 
+        .product-info {
+            text-align: center;
+        }
+
+        .pro-price {
+            font-size: 18px;
+            color: #ff7f00;
+        }
+    </style>
+    <title>Shop Page</title>
 </head>
-
 <body>
     <div class="wrapper">
         <?php include('nav.php'); ?>
@@ -93,7 +152,7 @@ $total_products = $result->num_rows; // Total products for display
                             <div class="breadcrumbs-inner">
                                 <h1 class="breadcrumbs-title">Check Our Products</h1>
                                 <ul class="breadcrumb-list">
-                                    <li><a href="index-4.php">Home</a></li>
+                                    <li><a href="index.html">Home</a></li>
                                     <li>Check Our Products</li>
                                 </ul>
                             </div>
@@ -103,47 +162,10 @@ $total_products = $result->num_rows; // Total products for display
             </div>
         </div>
 
-
-<!--pagination query-->
-        <?php
-include './adminDashboard/db.php'; 
-$products_per_page = 8;
-$page = isset($_GET['page']) && is_numeric($_GET['page']) ? intval($_GET['page']) : 1;
-$offset = ($page - 1) * $products_per_page;
-
-$total_result = $conn->query("SELECT COUNT(*) as total FROM products");
-$total_products = $total_result->fetch_assoc()['total'];
-$total_pages = min(3, ceil($total_products / $products_per_page));
-
-$stmt = $conn->prepare("SELECT * FROM products LIMIT ? OFFSET ?");
-$stmt->bind_param("ii", $products_per_page, $offset);
-$stmt->execute();
-$result = $stmt->get_result();
-$products = $result->fetch_all(MYSQLI_ASSOC);
-?>
-<!--pagination query end-->
-
         <div id="page-content" class="page-wrapper section">
             <div class="shop-section mb-80">
                 <div class="container">
                     <div class="row">
-                    <div class="col-lg-3 order-lg-1 order-2">
-                        <aside class="widget-search mb-30">
-                            <form id="search-form">
-                                <input type="text" id="search-box" placeholder="Search here..." />
-                            </form>
-                        </aside>
-
-                        <aside class="widget shop-filter box-shadow mb-30">
-                            <h6 class="widget-title border-left mb-20">Price</h6>
-                            <div class="price_filter">
-                                <div class="price_slider_amount">
-                                    <p id="price-range-display"></p>
-                                </div>
-                                <div id="slider-range"></div>
-                            </div>
-                        </aside>
-                    </div>
                         <div class="col-lg-9 order-lg-2 order-1">
                             <div class="shop-content">
                                 <div class="shop-option box-shadow mb-30 clearfix">
@@ -164,17 +186,14 @@ $products = $result->fetch_all(MYSQLI_ASSOC);
                                     </div>
                                 </div>
 
-
-                                
-
                                 <div class="tab-content">
                                     <div id="grid-view" class="tab-pane active show" role="tabpanel">
                                         <div class="row" id="product-list">
-                                            <?php if (count($products) > 0): ?>
-                                                <?php foreach ($products as $product): ?>
+                                            <?php if ($total_products > 0): ?>
+                                                <?php while ($product = $result->fetch_assoc()): ?>
                                                     <div class="col-lg-3 col-md-4 mb-4">
                                                         <div class="product-item border p-3 rounded shadow-sm">
-                                                            <div class="product-img" style="height: 170px;">
+                                                            <div class="product-img">
                                                                 <a href="single-product.php?id=<?= $product['id'] ?>">
                                                                     <img src="<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['name']) ?>" class="img-fluid" />
                                                                 </a>
@@ -187,47 +206,73 @@ $products = $result->fetch_all(MYSQLI_ASSOC);
                                                             </div>
                                                         </div>
                                                     </div>
-                                                <?php endforeach; ?>
+                                                <?php endwhile; ?>
                                             <?php else: ?>
                                                 <p class="text-center">No products found!</p>
                                             <?php endif; ?>
                                         </div>
                                     </div>
+
+                                    <!-- Pagination -->
+                                    <div class="pagination-container mt-4">
+                                        <nav>
+                                            <ul class="pagination justify-content-center">
+                                                <?php if ($page > 1): ?>
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?page=<?= $page - 1 ?>&sort=<?= isset($_GET['sort']) ? $_GET['sort'] : '' ?>&min_price=<?= $min_price ?>&max_price=<?= $max_price ?>" aria-label="Previous">
+                                                            <span aria-hidden="true">&laquo;</span>
+                                                        </a>
+                                                    </li>
+                                                <?php endif; ?>
+
+                                                <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                                                    <li class="page-item <?= ($page == $i) ? 'active' : '' ?>">
+                                                        <a class="page-link" href="?page=<?= $i ?>&sort=<?= isset($_GET['sort']) ? $_GET['sort'] : '' ?>&min_price=<?= $min_price ?>&max_price=<?= $max_price ?>"><?= $i ?></a>
+                                                    </li>
+                                                <?php endfor; ?>
+
+                                                <?php if ($page < $total_pages): ?>
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?page=<?= $page + 1 ?>&sort=<?= isset($_GET['sort']) ? $_GET['sort'] : '' ?>&min_price=<?= $min_price ?>&max_price=<?= $max_price ?>" aria-label="Next">
+                                                            <span aria-hidden="true">&raquo;</span>
+                                                        </a>
+                                                    </li>
+                                                <?php endif; ?>
+                                            </ul>
+                                        </nav>
+                                    </div>
+                                    <!-- End Pagination -->
                                 </div>
                             </div>
                         </div>
+
+                        <div class="col-lg-3 order-lg-1 order-2">
+                            <aside class="widget-search mb-30">
+                                <form id="search-form">
+                                    <input type="text" id="search-box" placeholder="Search here..." />
+                                </form>
+                            </aside>
+
+                            <aside class="widget shop-filter box-shadow mb-30">
+                                <h6 class="widget-title border-left mb-20">Price</h6>
+                                <div class="price_filter">
+                                    <div class="price_slider_amount">
+                                        <p id="price-range-display"></p>
+                                    </div>
+                                    <div id="slider-range"></div>
+                                </div>
+                            </aside>
+                        </div>
                     </div>
-
-                    
                 </div>
-
-                <!--pagination-->
-                <nav aria-label="Page navigation">
-                    <ul class="pagination justify-content-center">
-                        <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
-                            <a class="page-link" href="?page=<?= $page - 1 ?>">Previous</a>
-                        </li>
-
-                        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                            <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
-                                <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
-                            </li>
-                        <?php endfor; ?>
-
-                        <li class="page-item <?= ($page >= $total_pages) ? 'disabled' : '' ?>">
-                            <a class="page-link" href="?page=<?= $page + 1 ?>">Next</a>
-                        </li>
-                    </ul>
-                </nav>
             </div>
         </div>
+
+        <?php include('footer.php'); ?>
     </div>
 
-    <?php include('footer.php'); ?>
-    </div>
-
-    <script src="js/vendor/jquery-3.6.0.min.js"></script>
-    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script>
         $(function() {
@@ -261,9 +306,7 @@ $products = $result->fetch_all(MYSQLI_ASSOC);
                 $.ajax({
                     url: "search_shop_page.php",
                     method: "POST",
-                    data: {
-                        query: query
-                    },
+                    data: { query: query },
                     success: function(data) {
                         $("#product-list").html(data);
                     }
@@ -272,5 +315,4 @@ $products = $result->fetch_all(MYSQLI_ASSOC);
         });
     </script>
 </body>
-
 </html>
